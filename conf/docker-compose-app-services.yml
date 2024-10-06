@@ -1,0 +1,40 @@
+# to deploy on app services, use this file
+services:
+  rabbitMQ:
+    image: rabbitmq:3-management
+    container_name: my-rabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin_password
+      RABBITMQ_DEFAULT_VHOST: my_vhost
+    networks:
+      - app-network
+       
+  apiRabbit:
+    image: amaurimartins/api-sample-rabbitmq
+    depends_on:
+      - nginx
+      - rabbitMQ
+    restart: always
+    environment:
+      - RabbitMQ__URL=rabbitMQ
+      - RabbitMQ__Username=admin
+      - RabbitMQ__Password=admin_password
+      - RabbitMQ__VHost=my_vhost
+    networks:
+      - app-network
+ 
+  nginx:
+    image: amaurimartins/nginx-rabbitmq
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - rabbitMQ
+    restart: always
+    networks:
+      - app-network
+ 
+networks:
+  app-network:
+    driver: bridge
